@@ -1,0 +1,21 @@
+.tierContainer {
+  display: flex;
+  min-width: 100%;
+}
+
+.tierContentContainer {
+  background-color: #030303;
+  /* border: 1px solid #d3d3d3; */
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tierTitle {
+  width: 100px;
+  height: 100px;
+  background-color: #fc2003;
+  color: white;
+  display: grid;
+  place-items: center;
+}
