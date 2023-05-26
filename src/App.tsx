@@ -1,33 +1,10 @@
 import { Component, createSignal } from "solid-js";
-import { createStore } from "solid-js/store";
 import styles from "./App.module.css";
 import DraggableImage from "./components/DraggableImage";
 import Tier from "./components/Tier";
-import useListStore from "./store/listStore";
-
-interface ListItem {
-  name: string;
-  image: string;
-  order: number;
-  tier: string;
-  isDecoy: boolean;
-}
-
-interface Tier {
-  name: string;
-  index: number;
-  items: ListItem[];
-}
-
-interface ListStore {
-  tiers: Tier[];
-  oldTiers: Tier[];
-  // moveItem: (item: ListItem, from: String, to: String) => void;
-}
+import { ListItem } from "./tier";
 
 const App: Component = () => {
-  const characters = [];
-  // const { tiers } = useListStore();
   const [tiers, setTiers] = createSignal([
     {
       name: "S",

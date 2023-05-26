@@ -1,9 +1,6 @@
-import { ParentComponent, ParentProps } from "solid-js";
+import { ParentComponent } from "solid-js";
 import style from "../style/Tier.module.css";
-
-interface TierProps extends ParentProps {
-  title: string;
-}
+import { TierProps } from "../tier";
 
 const Tier: ParentComponent<TierProps> = (props: TierProps) => {
   return (
