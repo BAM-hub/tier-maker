@@ -1,4 +1,4 @@
-import { ParentProps } from "solid-js";
+import { Accessor, ParentProps } from "solid-js";
 
 export interface ListItem {
   name: string;
@@ -20,9 +20,14 @@ export interface IList {
 }
 
 export interface DraggableImageProps extends ParentProps, ListItem {
-  moveItem: (item: ListItem, from: string, to: string) => void;
+  setDraggedItem: (item: ListItem | undefined) => void;
 }
 
 export interface TierProps extends ParentProps {
   title: string;
+  draggedItem: Accessor<ListItem | undefined>;
+  listItems: ListItem[] | [];
+  setDraggedItem: (item: ListItem | undefined) => void;
+  tiers: Accessor<Tier[]>;
+  setTiers: (tiers: Tier[]) => void;
 }
