@@ -21,6 +21,7 @@ export interface IList {
 
 export interface DraggableImageProps extends ParentProps, ListItem {
   setDraggedItem: (item: ListItem | undefined) => void;
+  unDecoy: () => void;
 }
 
 export interface TierProps extends ParentProps {

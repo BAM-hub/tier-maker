@@ -44,7 +44,6 @@ const App: Component = () => {
       items: [],
     },
   ]);
-
   return (
     <div class={styles.App}>
       {tiers().map((tier) => (
