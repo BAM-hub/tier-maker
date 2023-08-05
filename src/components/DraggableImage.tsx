@@ -9,18 +9,14 @@ const DraggableImage: Component<DraggableImageProps> = (
       <div
         class="charcter"
         draggable={true}
-        onDragStart={(e) => {
-          e.target.classList.add("dragging");
-          e.target.classList.add("decoy");
-        }}
-        onDragEnd={(e) => {
-          props.moveItem(props, "S", "A");
-          e.target.classList.remove("dragging");
+        onDrag={(e) => {
+          props.setDraggedItem(props);
         }}
         style={{
           width: "100px",
           height: "100px",
           "background-size": "cover",
+          opacity: props.isDecoy ? "0.5" : "1",
           "background-image": `url(${props.image}})`,
         }}
       ></div>
