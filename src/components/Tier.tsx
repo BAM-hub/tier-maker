@@ -1,4 +1,4 @@
-import { ParentComponent } from "solid-js";
+import { ParentComponent, createSignal } from "solid-js";
 import style from "../style/Tier.module.css";
 import { ListItem, TierProps } from "../tier";
 import DraggableImage from "./DraggableImage";
@@ -9,14 +9,14 @@ enum EventType {
 }
 
 const Tier: ParentComponent<TierProps> = (props: TierProps) => {
-  const { tiers, setTiers } = props;
-
+  const { tiers, setTiers, tierIndex: thisTierIndex } = props;
+  const [itemList, setItemList] = createSignal<ListItem[]>([]);
   const moveItem = (item: ListItem, to: string, event: EventType) => {
     const itemTierIndex = tiers().findIndex(
       (tier) => tier.name === props.draggedItem()?.tier
     );
-    const toTierIndex = tiers().findIndex((tier) => tier.name === to);
-    const toTierContainsItem = tiers()[toTierIndex].items.find(
+
+    const toTierContainsItem = tiers()[thisTierIndex].items.find(
       (item) => item.name === props.draggedItem()?.name
     );
     if (toTierContainsItem !== undefined) {
@@ -37,7 +37,7 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
     // }
     // } else {
     if (props.draggedItem() !== undefined) {
-      newTiers[toTierIndex].items.push({
+      newTiers[thisTierIndex].items.push({
         ...(item as ListItem),
         tier: to,
       });
@@ -50,15 +50,12 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
    * this just sets the decoy to false for all items in order to add them visually to the tier
    */
   function unDecoy() {
-    const newTiers = tiers().map((tier) => {
-      const newItems = tier.items.map((item) => ({
-        ...item,
-        isDecoy: false,
-      }));
-      return { ...tier, items: newItems };
-    });
+    const newItems = itemList().map((item) => ({
+      ...item,
+      isDecoy: false,
+    }));
 
-    setTiers([...newTiers]);
+    setItemList([...newItems]);
   }
 
   /**
@@ -66,18 +63,55 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
    * @param tier
    */
   function removeNonDropedDecoy(tier: string, e: DragEvent) {
-    console.log(tier);
-    const tierIndex = tiers().findIndex((t) => t.name === tier);
-    if (e.clientY >= 100 * tiers().length) {
+    // const tierIndex = tiers().findIndex((t) => t.name === tier);
+    // if (e.clientY >= 100 * tiers().length) {
+    //   return;
+    // }
+    const newItems = itemList().filter((item) => item.isDecoy === false);
+
+    setItemList([...newItems]);
+  }
+
+  function atomRemove() {
+    if (!props.draggedItem()) return;
+    const newTiers = tiers();
+    const deleteFromIndex = tiers().findIndex(
+      (tier) => tier.name === props.draggedItem()?.tier
+    );
+    newTiers[deleteFromIndex].items = newTiers[deleteFromIndex].items.filter(
+      (element) => element.name !== props.draggedItem()?.name
+    );
+    // console.log({ newTiers });
+    return newTiers;
+  }
+
+  function atomAdd() {
+    const listContainsItem = itemList().find(
+      (item) => item.name === props.draggedItem()?.name
+    );
+    // console.log({ listContainsItem });
+    if (listContainsItem !== undefined) {
       return;
     }
-    const newItems = tiers()[tierIndex].items.filter(
-      (item) => item.isDecoy === false
-    );
-    const newTiers = tiers();
-    newTiers[tierIndex].items = newItems;
+    if (props.draggedItem()) {
+      const list = itemList();
+      list.push({
+        ...(props.draggedItem() as ListItem),
+        tier: props.title,
+        isDecoy: true,
+      });
+      setItemList([...list]);
+    }
+  }
 
-    setTiers([...newTiers]);
+  function removeDraggedItem() {
+    console.log("removeDraggItem", props.draggedItem());
+    if (props.draggedItem() !== undefined) {
+      const newItems = itemList().filter(
+        (item) => item.name !== props.draggedItem()?.name
+      );
+      setItemList(newItems);
+    }
   }
 
   return (
@@ -88,23 +122,48 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
       <div
         onDragOver={(e) => {
           e.preventDefault();
+          atomAdd();
         }}
-        onDragEnter={() => {
-          moveItem(
-            { ...props.draggedItem(), isDecoy: true } as ListItem,
-            props.title,
-            EventType.DragOver
-          );
+        onDragStart={(e) => {
+          // e.preventDefault();
+          // removeDraggedItem();
+          // atomRemove();
+          // removeDraggedItem();
         }}
-        onDragExit={(e) => {
-          removeNonDropedDecoy(props.title, e);
+        onDragEnter={(e) => {
+          e.preventDefault();
+          // console.log("drag enter");
+          // moveItem(
+          //   { ...props.draggedItem(), isDecoy: true } as ListItem,
+          //   props.title,
+          //   EventType.DragOver
+          // );
+          // moveItem(
+          //   { ...props.draggedItem(), isDecoy: true } as ListItem,
+          //   props.title,
+          //   EventType.DragOver
+          // );
+          // removeDraggedItem();
+          // atomAdd();
+          // props.setDraggedItem({
+          //   ...props.draggedItem(),
+          //   tier: props.title,
+          // } as ListItem);
+          // atomAdd();
+        }}
+        onDragLeave={(e) => {
+          // atomRemove();
+          e.preventDefault();
+
+          removeDraggedItem();
+          // removeNonDropedDecoy(props.title, e);
         }}
         onDrop={() => {
           unDecoy();
         }}
         class={style.tierContentContainer}
       >
-        {props.listItems?.map((character) => (
+        {itemList().map((character) => (
           <DraggableImage
             isDecoy={character.isDecoy}
             name={character.name}

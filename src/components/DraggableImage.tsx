@@ -15,15 +15,18 @@ const DraggableImage: Component<DraggableImageProps> = (
           setIsDecoy(true);
         }}
         onDragEnd={(e) => {
+          // console.log("drag end");
           props.setDraggedItem(undefined);
           setIsDecoy(false);
           props.unDecoy();
         }}
+        onDragOver={(e) => {}}
         style={{
           width: "100px",
           height: "100px",
           "background-size": "cover",
           opacity: isDecoy() ? "0.5" : "1",
+          // "pointer-events": isDecoy() ? "none" : "all",
           "background-image": `url(${props.image}})`,
         }}
       ></div>

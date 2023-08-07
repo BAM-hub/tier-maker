@@ -7,7 +7,7 @@ type CustomDragProps = {
   isMouseDown: () => boolean;
 };
 
-const CustomDrag = (props: CustomDragProps): Component<CustomDragProps> => {
+const CustomDrag = (props: CustomDragProps): => {
   const { setIsDragging, isDragging, setIsMouseDown, isMouseDown } = props;
   let ref: HTMLDivElement | undefined;
   createEffect(() => {
