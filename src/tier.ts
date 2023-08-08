@@ -31,4 +31,6 @@ export interface TierProps extends ParentProps {
   setDraggedItem: (item: ListItem | undefined) => void;
   tiers: Accessor<Tier[]>;
   setTiers: (tiers: Tier[]) => void;
+  mouseIndex: Accessor<{ x: number; y: number }>;
+  index: number;
 }

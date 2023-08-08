@@ -1,4 +1,4 @@
-import { ParentComponent } from "solid-js";
+import { ParentComponent, createEffect, createSignal } from "solid-js";
 import style from "../style/Tier.module.css";
 import { ListItem, TierProps } from "../tier";
 import DraggableImage from "./DraggableImage";
@@ -8,9 +8,19 @@ enum EventType {
   DragOver,
 }
 
-const Tier: ParentComponent<TierProps> = (props: TierProps) => {
-  const { tiers, setTiers } = props;
+function debounce(func: () => void, timeout = 100) {
+  let timer: number;
+  return (...args: any) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, timeout);
+  };
+}
 
+const Tier: ParentComponent<TierProps> = (props: TierProps) => {
+  const { tiers, setTiers, mouseIndex } = props;
+  const [items, setItems] = createSignal<ListItem[]>([]);
   const moveItem = (item: ListItem, to: string, event: EventType) => {
     const itemTierIndex = tiers().findIndex(
       (tier) => tier.name === props.draggedItem()?.tier
@@ -80,6 +90,41 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
     setTiers([...newTiers]);
   }
 
+  createEffect(() => {
+    const containsDragged = items().findIndex(
+      (item) => item.name === props.draggedItem()?.name
+    );
+
+    if (mouseIndex().y === props.index) {
+      if (props.draggedItem() && containsDragged === -1) {
+        console.log("should debounce");
+        // debounce(() => {
+        console.log("Debouncing");
+        const newItems = [
+          ...items(),
+          { ...props.draggedItem(), isDecoy: false },
+        ];
+        // console.log({ newItems, tier: props.title });
+        setItems(newItems as ListItem[]);
+        // }, 300);
+      }
+    }
+  });
+
+  createEffect(() => {
+    const containsDragged = items().findIndex(
+      (item) => item.name === props.draggedItem()?.name
+    );
+    if (mouseIndex().y !== props.index) {
+      if (props.draggedItem() && containsDragged !== -1) {
+        // debounce(() => {
+        const newItems = items().filter((item) => item.isDecoy && item);
+        setItems(newItems as ListItem[]);
+        // }, 300);
+      }
+    }
+  });
+
   return (
     <div class={style.tierContainer}>
       <div class={style.tierTitle}>
@@ -104,7 +149,7 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
         }}
         class={style.tierContentContainer}
       >
-        {props.listItems?.map((character) => (
+        {items()?.map((character) => (
           <DraggableImage
             isDecoy={character.isDecoy}
             name={character.name}
