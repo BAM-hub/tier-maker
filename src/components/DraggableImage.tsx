@@ -19,6 +19,7 @@ const DraggableImage: Component<DraggableImageProps> = (
           setIsDecoy(false);
           props.unDecoy();
         }}
+        onDragEnter={props.onDragOver}
         style={{
           width: "100px",
           height: "100px",

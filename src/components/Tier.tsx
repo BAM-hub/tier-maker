@@ -8,20 +8,15 @@ enum EventType {
   DragOver,
 }
 
-function debounce(func: () => void, timeout = 100) {
-  let timer: number;
-  return (...args: any) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      func.apply(this, args);
-    }, timeout);
-  };
-}
-
 const Tier: ParentComponent<TierProps> = (props: TierProps) => {
-  const { tiers, setTiers, mouseIndex } = props;
-  const [items, setItems] = createSignal<ListItem[]>([]);
-  const moveItem = (item: ListItem, to: string, event: EventType) => {
+  const { tiers, setTiers } = props;
+
+  const moveItem = (
+    item: ListItem,
+    to: string,
+    event: EventType,
+    index = -1
+  ) => {
     const itemTierIndex = tiers().findIndex(
       (tier) => tier.name === props.draggedItem()?.tier
     );
@@ -29,7 +24,35 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
     const toTierContainsItem = tiers()[toTierIndex].items.find(
       (item) => item.name === props.draggedItem()?.name
     );
-    if (toTierContainsItem !== undefined) {
+    if (EventType.DragOver === event && index !== -1) {
+      if (
+        props.draggedItem()?.name === tiers()[toTierIndex].items[index].name
+      ) {
+        return;
+      }
+      console.log("drag over", index);
+
+      const filteredTier = tiers()[itemTierIndex].items.filter(
+        (item) => item.name !== props.draggedItem()?.name
+      );
+      const filterdTOtier = tiers()[toTierIndex].items.filter(
+        (item) => item.name !== props.draggedItem()?.name
+      );
+      console.log({ filteredTier });
+
+      let newTiers = tiers();
+      newTiers[itemTierIndex].items = filteredTier;
+      newTiers[toTierIndex].items = filterdTOtier;
+      console.log(newTiers[toTierIndex].items[index], index);
+
+      newTiers[toTierIndex].items.splice(index, 0, {
+        ...(props.draggedItem() as ListItem),
+        tier: to,
+      });
+
+      setTiers([...newTiers]);
+      return;
+    } else if (toTierContainsItem !== undefined) {
       return;
     }
     const filteredTier = tiers()[itemTierIndex].items.filter(
@@ -37,15 +60,7 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
     );
     let newTiers = tiers();
     newTiers[itemTierIndex].items = filteredTier;
-    // if (toTierContainsItem !== undefined && event === EventType.Drop) {
-    // if (props.draggedItem() !== undefined) {
-    //   newTiers[toTierIndex].items.push({
-    //     ...(props.draggedItem() as ListItem),
-    //     tier: to,
-    //   });
-    //   setTiers([...newTiers]);
-    // }
-    // } else {
+
     if (props.draggedItem() !== undefined) {
       newTiers[toTierIndex].items.push({
         ...(item as ListItem),
@@ -53,7 +68,6 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
       });
       setTiers([...newTiers]);
     }
-    // }
   };
 
   /**
@@ -90,41 +104,6 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
     setTiers([...newTiers]);
   }
 
-  createEffect(() => {
-    const containsDragged = items().findIndex(
-      (item) => item.name === props.draggedItem()?.name
-    );
-
-    if (mouseIndex().y === props.index) {
-      if (props.draggedItem() && containsDragged === -1) {
-        console.log("should debounce");
-        // debounce(() => {
-        console.log("Debouncing");
-        const newItems = [
-          ...items(),
-          { ...props.draggedItem(), isDecoy: false },
-        ];
-        // console.log({ newItems, tier: props.title });
-        setItems(newItems as ListItem[]);
-        // }, 300);
-      }
-    }
-  });
-
-  createEffect(() => {
-    const containsDragged = items().findIndex(
-      (item) => item.name === props.draggedItem()?.name
-    );
-    if (mouseIndex().y !== props.index) {
-      if (props.draggedItem() && containsDragged !== -1) {
-        // debounce(() => {
-        const newItems = items().filter((item) => item.isDecoy && item);
-        setItems(newItems as ListItem[]);
-        // }, 300);
-      }
-    }
-  });
-
   return (
     <div class={style.tierContainer}>
       <div class={style.tierTitle}>
@@ -149,7 +128,7 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
         }}
         class={style.tierContentContainer}
       >
-        {items()?.map((character) => (
+        {props.listItems?.map((character, index) => (
           <DraggableImage
             isDecoy={character.isDecoy}
             name={character.name}
@@ -158,6 +137,15 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
             image={character.image}
             setDraggedItem={props.setDraggedItem}
             unDecoy={unDecoy}
+            onDragOver={(e) => {
+              e.preventDefault();
+              moveItem(
+                { ...props.draggedItem(), isDecoy: true } as ListItem,
+                props.title,
+                EventType.DragOver,
+                index
+              );
+            }}
           />
         ))}
         {props.children}
