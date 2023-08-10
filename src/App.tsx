@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, onCleanup } from "solid-js";
+import { Component, createSignal } from "solid-js";
 import styles from "./App.module.css";
 import Tier from "./components/Tier";
 import { ListItem } from "./tier";
