@@ -92,7 +92,10 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
   function removeNonDropedDecoy(tier: string, e: DragEvent) {
     console.log(tier);
     const tierIndex = tiers().findIndex((t) => t.name === tier);
-    if (e.clientY >= 100 * tiers().length) {
+    console.log({ tierIndex });
+    // not valid in this case
+    console.log(e.clientY, tiers().length * 100);
+    if (e.pageY >= 100 * tiers().length) {
       return;
     }
     const newItems = tiers()[tierIndex].items.filter(
@@ -105,12 +108,18 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
   }
 
   return (
-    <div class={style.tierContainer}>
+    <div
+      class={style.tierContainer}
+      style={{
+        "background-color": `hsl(${props.index * 20}, 100%, 50%)`,
+      }}
+    >
       <div class={style.tierTitle}>
         <h1>{props?.title}</h1>
       </div>
       <div
         onDragOver={(e) => {
+          console.log("over");
           e.preventDefault();
         }}
         onDragEnter={() => {
@@ -121,9 +130,11 @@ const Tier: ParentComponent<TierProps> = (props: TierProps) => {
           );
         }}
         onDragExit={(e) => {
+          console.log("exit");
           removeNonDropedDecoy(props.title, e);
         }}
         onDrop={() => {
+          console.log("drop");
           unDecoy();
         }}
         class={style.tierContentContainer}

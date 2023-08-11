@@ -11,6 +11,7 @@ const DraggableImage: Component<DraggableImageProps> = (
         class="charcter"
         draggable={true}
         onDrag={(e) => {
+          e.preventDefault();
           props.setDraggedItem(props);
           setIsDecoy(true);
         }}
